@@ -61,7 +61,7 @@ export default function HomePage() {
           }}
         >
           <a
-            href="#diagnostico"
+            href="/diagnostico"
             style={{
               background: '#7C3AED',
               color: '#ffffff',
@@ -196,7 +196,8 @@ export default function HomePage() {
             }}
           >
             <h2 style={{ fontSize: 32, margin: '0 0 12px' }}>
-              ¿Lista para ver qué tan fuerte está tu WhatsApp comercial?
+              ¿Listo para descubrir cuánta estrategia hay realmente detrás de tu
+              WhatsApp?
             </h2>
 
             <p
@@ -207,12 +208,13 @@ export default function HomePage() {
                 margin: '0 0 24px',
               }}
             >
-              Te toma pocos minutos y al final recibís una lectura clara sobre
-              tu nivel actual: Crítico, Inestable, Con potencial o Estratégico.
+              En pocos minutos vas a ver qué tan eficiente está siendo tu
+              WhatsApp comercial hoy y dónde tenés la mayor oportunidad de
+              mejora para vender mejor.
             </p>
 
             <a
-              href="#"
+              href="/diagnostico"
               style={{
                 display: 'inline-block',
                 background: '#A3FF2E',
