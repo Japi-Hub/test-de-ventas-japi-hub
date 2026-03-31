@@ -277,4 +277,4 @@ function getSummary(level: Level) {
         ],
         nextStep:
           'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad.',
-     
+      };
