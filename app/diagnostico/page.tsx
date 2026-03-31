@@ -190,14 +190,16 @@ const questions: Question[] = [
     type: 'text',
     required: true,
     text: '¿Qué suele pasar después de que un cliente te pide precio o información?',
-    placeholder: 'Ejemplo: me dejan en visto, preguntan y desaparecen, me comparan por precio...',
+    placeholder:
+      'Ejemplo: me dejan en visto, preguntan y desaparecen, me comparan por precio...',
   },
   {
     id: 'como_manejan_hoy',
     type: 'text',
     required: true,
     text: 'Contame brevemente cómo manejan hoy los mensajes en tu negocio.',
-    placeholder: 'Ejemplo: responde una persona, varias personas, no hay orden, usamos plantillas...',
+    placeholder:
+      'Ejemplo: responde una persona, varias personas, no hay orden, usamos plantillas...',
   },
 ];
 
@@ -276,5 +278,11 @@ function getSummary(level: Level) {
           'Refinar conversión en puntos clave',
         ],
         nextStep:
-          'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad.',
+          'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad'
       };
+  }
+}
+
+export default function DiagnosticoPage() {
+  ...
+}
