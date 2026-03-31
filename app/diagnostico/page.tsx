@@ -4,20 +4,34 @@ import { useMemo, useState } from 'react';
 
 type Level = 'Crítico' | 'Inestable' | 'Con potencial' | 'Estratégico';
 
-type Option = {
-  label: string;
-  value: number;
+type ChoiceQuestion = {
+  id: string;
+  type: 'choice';
+  text: string;
+  required?: boolean;
+  scoring?: boolean;
+  options: {
+    label: string;
+    value?: number;
+  }[];
 };
 
-type Question = {
+type TextQuestion = {
   id: string;
+  type: 'text';
   text: string;
-  options: Option[];
+  required?: boolean;
+  placeholder?: string;
 };
+
+type Question = ChoiceQuestion | TextQuestion;
 
 const questions: Question[] = [
   {
     id: 'velocidad',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: 'Cuando un cliente potencial te pide precio o información, ¿cuánto tardás en responder?',
     options: [
       { label: 'Menos de 5 minutos', value: 10 },
@@ -28,6 +42,9 @@ const questions: Question[] = [
   },
   {
     id: 'seguimiento',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: "Pasaste el presupuesto y el cliente dejó tu mensaje en 'Visto'. ¿Qué hacés?",
     options: [
       { label: 'Tengo un plan claro de seguimiento', value: 10 },
@@ -38,6 +55,9 @@ const questions: Question[] = [
   },
   {
     id: 'estructura',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: '¿Cómo escribís tus mensajes de venta?',
     options: [
       { label: 'Uso plantillas o estructuras definidas', value: 10 },
@@ -48,6 +68,9 @@ const questions: Question[] = [
   },
   {
     id: 'objeciones',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: "Un cliente te dice: 'Es muy caro'. ¿Cómo respondés?",
     options: [
       { label: 'Explico el valor, no solo el precio', value: 10 },
@@ -58,6 +81,9 @@ const questions: Question[] = [
   },
   {
     id: 'tono',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: 'Si mirás tus últimos 10 chats de venta, ¿qué sentís que transmitís?',
     options: [
       { label: 'Profesional, claro y con propósito', value: 10 },
@@ -68,6 +94,9 @@ const questions: Question[] = [
   },
   {
     id: 'cta',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: '¿Cómo terminás tus mensajes de venta?',
     options: [
       { label: 'Con una acción clara', value: 10 },
@@ -78,6 +107,9 @@ const questions: Question[] = [
   },
   {
     id: 'sistema',
+    type: 'choice',
+    scoring: true,
+    required: true,
     text: '¿Tu equipo sigue el mismo proceso de venta?',
     options: [
       { label: 'Sí, hay un proceso claro', value: 10 },
@@ -85,6 +117,89 @@ const questions: Question[] = [
       { label: 'Cada vendedor vende distinto', value: 3 },
       { label: 'No hay proceso definido', value: 0 },
     ],
+  },
+
+  {
+    id: 'quien_responde',
+    type: 'choice',
+    required: true,
+    text: '¿Quién responde hoy la mayoría de los mensajes de venta en tu WhatsApp?',
+    options: [
+      { label: 'Yo solo/a' },
+      { label: 'Yo y otra persona' },
+      { label: 'Un pequeño equipo' },
+      { label: 'Varias personas según disponibilidad' },
+    ],
+  },
+  {
+    id: 'cantidad_equipo',
+    type: 'choice',
+    required: true,
+    text: '¿Cuántas personas participan hoy en responder o vender por WhatsApp?',
+    options: [
+      { label: '1' },
+      { label: '2' },
+      { label: '3 a 5' },
+      { label: 'Más de 5' },
+    ],
+  },
+  {
+    id: 'criterio_equipo',
+    type: 'choice',
+    required: true,
+    text: '¿Tu equipo responde con el mismo criterio o cada quien maneja los chats a su manera?',
+    options: [
+      { label: 'Todos siguen una misma estructura' },
+      { label: 'Hay una base, pero cada quien adapta' },
+      { label: 'Cada quien responde distinto' },
+      { label: 'No tengo claridad sobre eso' },
+    ],
+  },
+  {
+    id: 'volumen_chats',
+    type: 'choice',
+    required: true,
+    text: '¿Cuántos chats de venta o consultas manejan aproximadamente por semana?',
+    options: [
+      { label: 'Menos de 20' },
+      { label: 'Entre 20 y 50' },
+      { label: 'Entre 51 y 100' },
+      { label: 'Más de 100' },
+    ],
+  },
+  {
+    id: 'objetivo_90_dias',
+    type: 'choice',
+    required: true,
+    text: '¿Qué te gustaría lograr en los próximos 90 días con tu WhatsApp comercial?',
+    options: [
+      { label: 'Responder más rápido y mejor' },
+      { label: 'Cerrar más ventas' },
+      { label: 'Ordenar al equipo' },
+      { label: 'Escalar con más estructura y seguimiento' },
+    ],
+  },
+
+  {
+    id: 'obstaculo_principal',
+    type: 'text',
+    required: true,
+    text: '¿Cuál sentís que es hoy tu mayor obstáculo para vender más por WhatsApp?',
+    placeholder: 'Contame brevemente qué es lo que más te frena hoy...',
+  },
+  {
+    id: 'despues_del_precio',
+    type: 'text',
+    required: true,
+    text: '¿Qué suele pasar después de que un cliente te pide precio o información?',
+    placeholder: 'Ejemplo: me dejan en visto, preguntan y desaparecen, me comparan por precio...',
+  },
+  {
+    id: 'como_manejan_hoy',
+    type: 'text',
+    required: true,
+    text: 'Contame brevemente cómo manejan hoy los mensajes en tu negocio.',
+    placeholder: 'Ejemplo: responde una persona, varias personas, no hay orden, usamos plantillas...',
   },
 ];
 
@@ -100,288 +215,69 @@ function getSummary(level: Level) {
     case 'Crítico':
       return {
         interpretation:
-          'Tu WhatsApp hoy está funcionando más como un buzón que como un sistema de ventas.',
-        strengths: ['Tenés margen enorme de mejora', 'Ya detectaste el problema', 'Podés ordenar rápido si actuás'],
-        gaps: ['Respuesta lenta o inconsistente', 'Poco seguimiento', 'Mensajes sin estructura'],
-        nextStep: 'Necesitás ordenar tu proceso comercial desde la base.',
+          'Hoy tu WhatsApp está funcionando más como un buzón que como un sistema real de ventas.',
+        strengths: [
+          'Ya detectaste que algo no está funcionando',
+          'Hay mucho espacio para mejorar',
+          'Podés ordenar rápido si tomás acción',
+        ],
+        gaps: [
+          'Respuesta lenta o inconsistente',
+          'Poco seguimiento',
+          'Mensajes sin estructura clara',
+        ],
+        nextStep:
+          'Necesitás ordenar la base de tu proceso comercial antes de escalar.',
       };
     case 'Inestable':
       return {
         interpretation:
           'Hay intención comercial, pero todavía dependés demasiado de improvisación.',
-        strengths: ['Ya hay esfuerzo comercial', 'Hay oportunidades claras', 'Podés crecer con estructura'],
-        gaps: ['Falta consistencia', 'Seguimiento irregular', 'Poca sistematización'],
-        nextStep: 'Necesitás estructura y un proceso repetible.',
+        strengths: [
+          'Ya existe esfuerzo comercial',
+          'El canal tiene potencial',
+          'Hay oportunidades claras de mejora',
+        ],
+        gaps: [
+          'Falta consistencia en mensajes y seguimiento',
+          'El proceso todavía no es repetible',
+          'La venta depende demasiado de la persona que responde',
+        ],
+        nextStep:
+          'Necesitás estructura, seguimiento y más orden en la operación diaria.',
       };
     case 'Con potencial':
       return {
         interpretation:
           'Ya tenés bases buenas, pero todavía hay fugas que frenan mejores resultados.',
-        strengths: ['Buen punto de partida', 'Mensajes con algo de criterio', 'Hay capacidad de optimizar'],
-        gaps: ['Fugas en cierre', 'Seguimiento mejorable', 'Persuasión inconsistente'],
-        nextStep: 'Necesitás optimizar los puntos donde hoy perdés ventas.',
+        strengths: [
+          'Buen punto de partida',
+          'Mensajes con algo de criterio',
+          'Hay capacidad de optimizar',
+        ],
+        gaps: [
+          'Fugas en cierre',
+          'Seguimiento mejorable',
+          'Persuasión inconsistente',
+        ],
+        nextStep:
+          'Necesitás optimizar los puntos donde hoy perdés ventas.',
       };
     case 'Estratégico':
       return {
         interpretation:
-          'Tu WhatsApp ya tiene una lógica comercial fuerte y está cerca de un sistema real.',
-        strengths: ['Buena base estratégica', 'Mejor consistencia', 'Más claridad comercial'],
-        gaps: ['Escala', 'Automatización inteligente', 'Refinar conversión'],
-        nextStep: 'El foco ahora es escalar y optimizar.',
+          'Tu WhatsApp ya tiene una lógica comercial fuerte y está cerca de comportarse como un sistema real.',
+        strengths: [
+          'Hay base estratégica',
+          'Mejor consistencia operativa',
+          'Buen nivel de claridad comercial',
+        ],
+        gaps: [
+          'Automatización inteligente',
+          'Escalabilidad del proceso',
+          'Refinar conversión en puntos clave',
+        ],
+        nextStep:
+          'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad.',
       };
   }
-}
-
-export default function DiagnosticoPage() {
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [lead, setLead] = useState({
-    name: '',
-    email: '',
-    whatsapp: '',
-    company: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
-
-  const totalScore = useMemo(
-    () => Object.values(answers).reduce((sum, value) => sum + value, 0),
-    [answers]
-  );
-
-  const finalScore = Math.round((totalScore / 70) * 100);
-  const level = getLevel(finalScore);
-  const summary = getSummary(level);
-
-  const currentQuestion = questions[step];
-  const allAnswered = Object.keys(answers).length === questions.length;
-  const canSubmitLead =
-    lead.name.trim() && lead.email.trim() && lead.whatsapp.trim() && lead.company.trim();
-
-  const handleAnswer = (value: number) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [currentQuestion.id]: value,
-    }));
-
-    if (step < questions.length - 1) {
-      setStep(step + 1);
-    }
-  };
-
-  const handleLeadSubmit = async () => {
-    if (!canSubmitLead) return;
-
-    try {
-      await fetch('/api/diagnostico', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...lead,
-          totalScore: finalScore,
-          nivel: level,
-          answers,
-          questionnaireVersion: 'LIGHT',
-        }),
-      });
-    } catch (error) {
-      console.error(error);
-    }
-
-    setSubmitted(true);
-  };
-
-  return (
-    <main
-      style={{
-        minHeight: '100vh',
-        background: '#ffffff',
-        color: '#1f1f1f',
-        padding: '40px 20px',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 760,
-          margin: '0 auto',
-        }}
-      >
-        <div
-          style={{
-            display: 'inline-block',
-            background: '#A3FF2E',
-            color: '#111111',
-            borderRadius: 999,
-            padding: '8px 14px',
-            fontWeight: 700,
-            fontSize: 14,
-            marginBottom: 20,
-          }}
-        >
-          Diagnóstico JAPI HUB
-        </div>
-
-        {!allAnswered && (
-          <>
-            <h1 style={{ fontSize: 36, lineHeight: 1.1, color: '#2F165F', marginBottom: 12 }}>
-              Paso {step + 1} de {questions.length}
-            </h1>
-            <p style={{ fontSize: 24, lineHeight: 1.4, marginBottom: 28 }}>{currentQuestion.text}</p>
-
-            <div style={{ display: 'grid', gap: 14 }}>
-              {currentQuestion.options.map((option) => (
-                <button
-                  key={option.label}
-                  onClick={() => handleAnswer(option.value)}
-                  style={{
-                    textAlign: 'left',
-                    padding: '18px 20px',
-                    borderRadius: 16,
-                    border: '1px solid #e8defa',
-                    background: '#faf7ff',
-                    cursor: 'pointer',
-                    fontSize: 16,
-                    fontWeight: 600,
-                  }}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {allAnswered && !submitted && (
-          <>
-            <h2 style={{ fontSize: 34, lineHeight: 1.1, color: '#2F165F', marginBottom: 12 }}>
-              Antes de mostrarte tu resultado
-            </h2>
-            <p style={{ fontSize: 18, lineHeight: 1.6, marginBottom: 24 }}>
-              Dejanos tus datos para enviarte seguimiento y ayudarte a mejorar tu WhatsApp comercial.
-            </p>
-
-            <div style={{ display: 'grid', gap: 14 }}>
-              <input
-                placeholder="Nombre"
-                value={lead.name}
-                onChange={(e) => setLead({ ...lead, name: e.target.value })}
-                style={{ padding: '16px', borderRadius: 12, border: '1px solid #ddd', fontSize: 16 }}
-              />
-              <input
-                placeholder="Email"
-                value={lead.email}
-                onChange={(e) => setLead({ ...lead, email: e.target.value })}
-                style={{ padding: '16px', borderRadius: 12, border: '1px solid #ddd', fontSize: 16 }}
-              />
-              <input
-                placeholder="WhatsApp"
-                value={lead.whatsapp}
-                onChange={(e) => setLead({ ...lead, whatsapp: e.target.value })}
-                style={{ padding: '16px', borderRadius: 12, border: '1px solid #ddd', fontSize: 16 }}
-              />
-              <input
-                placeholder="Empresa"
-                value={lead.company}
-                onChange={(e) => setLead({ ...lead, company: e.target.value })}
-                style={{ padding: '16px', borderRadius: 12, border: '1px solid #ddd', fontSize: 16 }}
-              />
-
-              <button
-                onClick={handleLeadSubmit}
-                disabled={!canSubmitLead}
-                style={{
-                  background: canSubmitLead ? '#7C3AED' : '#cdbef5',
-                  color: '#ffffff',
-                  padding: '16px 22px',
-                  borderRadius: 14,
-                  border: 'none',
-                  cursor: canSubmitLead ? 'pointer' : 'not-allowed',
-                  fontWeight: 700,
-                  fontSize: 16,
-                }}
-              >
-                Ver mi resultado
-              </button>
-            </div>
-          </>
-        )}
-
-        {submitted && (
-          <div
-            style={{
-              background: '#faf7ff',
-              border: '1px solid #e8defa',
-              borderRadius: 24,
-              padding: '28px',
-            }}
-          >
-            <div
-              style={{
-                display: 'inline-block',
-                background: '#2F165F',
-                color: '#ffffff',
-                borderRadius: 999,
-                padding: '8px 14px',
-                fontWeight: 700,
-                fontSize: 14,
-                marginBottom: 18,
-              }}
-            >
-              Resultado: {level}
-            </div>
-
-            <h2 style={{ fontSize: 34, lineHeight: 1.1, color: '#2F165F', margin: '0 0 12px' }}>
-              Tu score fue: {finalScore}/100
-            </h2>
-
-            <p style={{ fontSize: 18, lineHeight: 1.6, marginBottom: 24 }}>
-              {summary.interpretation}
-            </p>
-
-            <div style={{ display: 'grid', gap: 18, marginBottom: 24 }}>
-              <div>
-                <h3 style={{ color: '#2F165F' }}>Fortalezas o señales</h3>
-                <ul>
-                  {summary.strengths.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <h3 style={{ color: '#2F165F' }}>Fugas principales</h3>
-                <ul>
-                  {summary.gaps.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <p style={{ fontWeight: 700, marginBottom: 20 }}>
-              Siguiente paso: {summary.nextStep}
-            </p>
-
-            <a
-              href={`https://wa.me/50661951827?text=${encodeURIComponent(
-                `Hola JAPI HUB. Hice el diagnóstico y quedé en nivel ${level} con score ${finalScore}. Quiero ayuda para mejorar mi WhatsApp comercial.`
-              )}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-block',
-                background: '#A3FF2E',
-                color: '#111111',
-                padding: '16px 22px',
-                borderRadius: 14,
-                textDecoration: 'none',
-                fontWeight: 800,
-              }}
-            >
-              Quiero hablar sobre mi diagnóstico
-            </a>
-          </div>
-        )}
-      </div>
-    </main>
-  );
-}
