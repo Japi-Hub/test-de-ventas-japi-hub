@@ -278,11 +278,418 @@ function getSummary(level: Level) {
           'Refinar conversión en puntos clave',
         ],
         nextStep:
-          'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad'
+          'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad.',
       };
   }
 }
 
 export default function DiagnosticoPage() {
-  ...
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, number | string>>({});
+  const [lead, setLead] = useState({
+    name: '',
+    email: '',
+    whatsapp: '',
+    company: '',
+  });
+  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const scoringQuestions = questions.filter(
+    (q): q is ChoiceQuestion => q.type === 'choice' && q.scoring
+  );
+
+  const rawScore = useMemo(() => {
+    return scoringQuestions.reduce((sum, question) => {
+      const value = answers[question.id];
+      return sum + (typeof value === 'number' ? value : 0);
+    }, 0);
+  }, [answers, scoringQuestions]);
+
+  const finalScore = Math.round((rawScore / 70) * 100);
+  const level = getLevel(finalScore);
+  const summary = getSummary(level);
+
+  const currentQuestion = questions[step];
+  const allAnswered = questions.every((q) => {
+    const value = answers[q.id];
+    if (!q.required) return true;
+    if (q.type === 'text') {
+      return typeof value === 'string' && value.trim().length > 0;
+    }
+    return value !== undefined;
+  });
+
+  const canSubmitLead = Boolean(
+    lead.name.trim() &&
+      lead.email.trim() &&
+      lead.whatsapp.trim() &&
+      lead.company.trim()
+  );
+
+  const handleChoiceAnswer = (value: number | string) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [currentQuestion.id]: value,
+    }));
+
+    if (step < questions.length - 1) {
+      setStep((prev) => prev + 1);
+    }
+  };
+
+  const handleTextContinue = () => {
+    const value = answers[currentQuestion.id];
+    if (typeof value !== 'string' || !value.trim()) return;
+
+    if (step < questions.length - 1) {
+      setStep((prev) => prev + 1);
+    }
+  };
+
+  const handleLeadSubmit = async () => {
+    if (!canSubmitLead) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await fetch('/api/diagnostico', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...lead,
+          totalScore: finalScore,
+          nivel: level,
+          answers,
+          questionnaireVersion: 'LIGHT_PLUS',
+        }),
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
+  };
+
+  return (
+    <main
+      style={{
+        minHeight: '100vh',
+        background: '#ffffff',
+        color: '#1f1f1f',
+        padding: '40px 20px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 760,
+          margin: '0 auto',
+        }}
+      >
+        <div
+          style={{
+            display: 'inline-block',
+            background: '#A3FF2E',
+            color: '#111111',
+            borderRadius: 999,
+            padding: '8px 14px',
+            fontWeight: 700,
+            fontSize: 14,
+            marginBottom: 20,
+          }}
+        >
+          Diagnóstico JAPI HUB
+        </div>
+
+        {!allAnswered && (
+          <>
+            <h1
+              style={{
+                fontSize: 36,
+                lineHeight: 1.1,
+                color: '#2F165F',
+                marginBottom: 12,
+              }}
+            >
+              Paso {step + 1} de {questions.length}
+            </h1>
+
+            <p
+              style={{
+                fontSize: 24,
+                lineHeight: 1.4,
+                marginBottom: 28,
+              }}
+            >
+              {currentQuestion.text}
+            </p>
+
+            {currentQuestion.type === 'choice' ? (
+              <div style={{ display: 'grid', gap: 14 }}>
+                {currentQuestion.options.map((option) => (
+                  <button
+                    key={option.label}
+                    onClick={() =>
+                      handleChoiceAnswer(
+                        option.value !== undefined ? option.value : option.label
+                      )
+                    }
+                    style={{
+                      textAlign: 'left',
+                      padding: '18px 20px',
+                      borderRadius: 16,
+                      border: '1px solid #e8defa',
+                      background: '#faf7ff',
+                      cursor: 'pointer',
+                      fontSize: 16,
+                      fontWeight: 600,
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 16 }}>
+                <textarea
+                  placeholder={currentQuestion.placeholder || ''}
+                  value={
+                    typeof answers[currentQuestion.id] === 'string'
+                      ? (answers[currentQuestion.id] as string)
+                      : ''
+                  }
+                  onChange={(e) =>
+                    setAnswers((prev) => ({
+                      ...prev,
+                      [currentQuestion.id]: e.target.value,
+                    }))
+                  }
+                  rows={6}
+                  style={{
+                    width: '100%',
+                    padding: '18px',
+                    borderRadius: 16,
+                    border: '1px solid #ddd',
+                    fontSize: 16,
+                    lineHeight: 1.5,
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
+                  }}
+                />
+
+                <button
+                  onClick={handleTextContinue}
+                  disabled={
+                    typeof answers[currentQuestion.id] !== 'string' ||
+                    !(answers[currentQuestion.id] as string).trim()
+                  }
+                  style={{
+                    display: 'inline-block',
+                    background:
+                      typeof answers[currentQuestion.id] === 'string' &&
+                      (answers[currentQuestion.id] as string).trim()
+                        ? '#7C3AED'
+                        : '#cdbef5',
+                    color: '#ffffff',
+                    padding: '16px 22px',
+                    borderRadius: 14,
+                    border: 'none',
+                    cursor:
+                      typeof answers[currentQuestion.id] === 'string' &&
+                      (answers[currentQuestion.id] as string).trim()
+                        ? 'pointer'
+                        : 'not-allowed',
+                    fontWeight: 700,
+                    fontSize: 16,
+                  }}
+                >
+                  Continuar
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {allAnswered && !submitted && (
+          <>
+            <h2
+              style={{
+                fontSize: 34,
+                lineHeight: 1.1,
+                color: '#2F165F',
+                marginBottom: 12,
+              }}
+            >
+              Antes de mostrarte tu resultado
+            </h2>
+
+            <p
+              style={{
+                fontSize: 18,
+                lineHeight: 1.6,
+                marginBottom: 24,
+              }}
+            >
+              Dejanos tus datos para enviarte seguimiento y ayudarte a mejorar tu WhatsApp comercial.
+            </p>
+
+            <div style={{ display: 'grid', gap: 14 }}>
+              <input
+                placeholder="Nombre"
+                value={lead.name}
+                onChange={(e) => setLead({ ...lead, name: e.target.value })}
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                }}
+              />
+              <input
+                placeholder="Email"
+                value={lead.email}
+                onChange={(e) => setLead({ ...lead, email: e.target.value })}
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                }}
+              />
+              <input
+                placeholder="WhatsApp"
+                value={lead.whatsapp}
+                onChange={(e) => setLead({ ...lead, whatsapp: e.target.value })}
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                }}
+              />
+              <input
+                placeholder="Empresa"
+                value={lead.company}
+                onChange={(e) => setLead({ ...lead, company: e.target.value })}
+                style={{
+                  padding: '16px',
+                  borderRadius: 12,
+                  border: '1px solid #ddd',
+                  fontSize: 16,
+                }}
+              />
+
+              <button
+                onClick={handleLeadSubmit}
+                disabled={!canSubmitLead || isSubmitting}
+                style={{
+                  background: canSubmitLead ? '#7C3AED' : '#cdbef5',
+                  color: '#ffffff',
+                  padding: '16px 22px',
+                  borderRadius: 14,
+                  border: 'none',
+                  cursor: canSubmitLead ? 'pointer' : 'not-allowed',
+                  fontWeight: 700,
+                  fontSize: 16,
+                }}
+              >
+                {isSubmitting ? 'Guardando...' : 'Ver mi resultado'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {submitted && (
+          <div
+            style={{
+              background: '#faf7ff',
+              border: '1px solid #e8defa',
+              borderRadius: 24,
+              padding: '28px',
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-block',
+                background: '#2F165F',
+                color: '#ffffff',
+                borderRadius: 999,
+                padding: '8px 14px',
+                fontWeight: 700,
+                fontSize: 14,
+                marginBottom: 18,
+              }}
+            >
+              Resultado: {level}
+            </div>
+
+            <h2
+              style={{
+                fontSize: 34,
+                lineHeight: 1.1,
+                color: '#2F165F',
+                margin: '0 0 12px',
+              }}
+            >
+              Tu score fue: {finalScore}/100
+            </h2>
+
+            <p
+              style={{
+                fontSize: 18,
+                lineHeight: 1.6,
+                marginBottom: 24,
+              }}
+            >
+              {summary.interpretation}
+            </p>
+
+            <div style={{ display: 'grid', gap: 18, marginBottom: 24 }}>
+              <div>
+                <h3 style={{ color: '#2F165F' }}>Fortalezas o señales</h3>
+                <ul>
+                  {summary.strengths.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h3 style={{ color: '#2F165F' }}>Fugas principales</h3>
+                <ul>
+                  {summary.gaps.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <p style={{ fontWeight: 700, marginBottom: 20 }}>
+              Siguiente paso: {summary.nextStep}
+            </p>
+
+            <a
+              href={`https://wa.me/50661951827?text=${encodeURIComponent(
+                `Hola JAPI HUB. Hice el diagnóstico y quedé en nivel ${level} con score ${finalScore}. Quiero ayuda para mejorar mi WhatsApp comercial.`
+              )}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-block',
+                background: '#A3FF2E',
+                color: '#111111',
+                padding: '16px 22px',
+                borderRadius: 14,
+                textDecoration: 'none',
+                fontWeight: 800,
+              }}
+            >
+              Quiero hablar sobre mi diagnóstico
+            </a>
+          </div>
+        )}
+      </div>
+    </main>
+  );
 }
