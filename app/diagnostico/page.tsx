@@ -118,7 +118,6 @@ const questions: Question[] = [
       { label: 'No hay proceso definido', value: 0 },
     ],
   },
-
   {
     id: 'quien_responde',
     type: 'choice',
@@ -179,7 +178,6 @@ const questions: Question[] = [
       { label: 'Escalar con más estructura y seguimiento' },
     ],
   },
-
   {
     id: 'obstaculo_principal',
     type: 'text',
@@ -279,5 +277,4 @@ function getSummary(level: Level) {
         ],
         nextStep:
           'El foco ahora es escalar, medir mejor y multiplicar resultados sin perder calidad.',
-      };
-  }
+     
