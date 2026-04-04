@@ -32,21 +32,21 @@ export async function POST(request: Request) {
       );
     }
 
+    const payload = {
+      name,
+      email,
+      whatsapp,
+      company,
+      totalScore,
+      nivel,
+      answers,
+      questionnaireVersion,
+    };
+
     const supabase = getSupabaseAdmin();
     const table = getDiagnosticoTableName();
 
-    const { error } = await supabase.from(table).insert([
-      {
-        name,
-        email,
-        whatsapp,
-        company,
-        totalScore,
-        nivel,
-        answers,
-        questionnaireVersion,
-      },
-    ]);
+    const { error } = await supabase.from(table).insert([payload]);
 
     if (error) {
       console.error('Supabase insert error:', error);
@@ -54,6 +54,20 @@ export async function POST(request: Request) {
         { error: 'No se pudo guardar el diagnóstico.' },
         { status: 500 }
       );
+    }
+
+    const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
+
+    if (makeWebhookUrl) {
+      try {
+        await fetch(makeWebhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      } catch (makeError) {
+        console.error('Make webhook error:', makeError);
+      }
     }
 
     return NextResponse.json({ ok: true });
