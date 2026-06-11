@@ -196,7 +196,8 @@ export default function Diagnostico() {
   const progressLabel = step < QS.length ? `Pregunta ${step + 1} de ${QS.length}` : step === QS.length ? "Último paso" : "Tu resultado";
 
   const pickOption = (q: Q, i: number) => {
-    const val = q.type === "score" ? (q.opts as ScoreOpt[])[i][1] : (q.opts as string[])[i];
+    if (q.type === "open") return;
+    const val = q.type === "score" ? q.opts[i][1] : q.opts[i];
     setAnswers((a) => ({ ...a, [q.key]: val }));
     setTimeout(() => setStep((s) => s + 1), 180);
   };
@@ -252,7 +253,7 @@ export default function Diagnostico() {
                 </>
               );
             }
-            const labels = q.type === "score" ? (q.opts as ScoreOpt[]).map(([t]) => t) : (q.opts as string[]);
+            const labels = q.type === "score" ? q.opts.map(([t]) => t) : q.opts;
             const current = answers[q.key];
             return (
               <>
@@ -260,7 +261,7 @@ export default function Diagnostico() {
                 <p className="hint">Elegí la opción que más se parezca a tu realidad hoy.</p>
                 <div className="opts">
                   {labels.map((txt, i) => {
-                    const val = q.type === "score" ? (q.opts as ScoreOpt[])[i][1] : txt;
+                    const val = q.type === "score" ? q.opts[i][1] : txt;
                     return (
                       <button key={txt} className={`opt${current === val ? " sel" : ""}`} onClick={() => pickOption(q, i)}>
                         {txt}
@@ -345,3 +346,4 @@ export default function Diagnostico() {
     </div>
   );
 }
+
